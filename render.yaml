@@ -1,0 +1,29 @@
+# Render Blueprint — cria só o site (Web Service).
+# O banco PostgreSQL NÃO é criado aqui: o plano gratuito permite apenas 1 banco por conta,
+# então você informa a DATABASE_URL de um banco que já exista (ou crie um novo).
+# https://render.com/docs/infrastructure-as-code
+services:
+  - type: web
+    name: urbanalert
+    runtime: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DATABASE_URL          # cole a "Internal Database URL" do seu PostgreSQL no painel
+        sync: false
+      - key: DB_SCHEMA             # schema próprio: não mexe nas tabelas de outros projetos no mesmo banco
+        value: urbanalert
+      - key: AUTO_SETUP            # cria schema, tabelas e admin automaticamente a cada deploy
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: ADMIN_EMAIL
+        value: admin@urbanalert.com
+      - key: ADMIN_PASSWORD        # senha do administrador (você informa no painel)
+        sync: false
